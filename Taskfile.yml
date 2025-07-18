@@ -1,21 +1,48 @@
-# https://taskfile.dev
-
 version: '3'
 
-vars:
-  GREETING: Hello, World!
+dotenv: ['.env']
 
 tasks:
   default:
+    desc: Show all available commands
     cmds:
-      - echo "{{.GREETING}}"
+      - echo "Available commands:"
+      - task --list-all
     silent: true
   dev:
+    desc: Start development server with hot reload using Air
     cmds:
       - air
     silent: true
   test:
+    desc: Run tests and linting with golangci-lint
     cmds:
       - go test ./...
       - golangci-lint run
+    silent: true
+  migrate:
+    desc: Create a new database migration (requires name parameter)
+    cmds:
+      - |
+        if [ -z "{{.name}}" ]; then
+          echo "Error: 'name' parameter is required, use 'task migrate name=name_of_migration'"
+          exit 1
+        fi
+      - migrate create -ext sql -dir "./migrations" -format "20060102030405" "{{.name}}"
+    silent: true
+  migrate-up:
+    desc: Run all pending migrations
+    cmds:
+      - echo "Running migrations up $DB_DNS"
+      - migrate -source file://./migrations -database "$DB_DNS" up
+    silent: true
+  migrate-down:
+    desc: Rollback the last migration
+    cmds:
+      - migrate -source file://./migrations -database "$DB_DNS" down
+    silent: true
+  generate:
+    desc: Generate queries from sql files
+    cmds:
+      - sqlc generate
     silent: true
