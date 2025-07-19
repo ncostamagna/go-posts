@@ -1,29 +1,50 @@
 package posts
 
-import "log/slog"
+import (
+	"context"
+	"log/slog"
+
+	"github.com/ncostamagna/go-posts/adapters/database"
+)
 
 type (
 	Repository interface {
+		Store(ctx context.Context, post *database.Post) error
 	}
 
 	repo struct {
+		db  *database.Queries
 		log *slog.Logger
 	}
 )
 
-/*
-import (
-	"context"
-	"log/slog"
-	"maps"
-	"slices"
 
-	"github.com/ncostamagna/go-posts/internal/domain"
-)
+// NewRepo is a repositories handler.
+func NewRepo(db *database.Queries, l *slog.Logger) Repository {
+	return &repo{
+		db:  db,
+		log: l,
+	}
+}
+
+func (r *repo) Store(ctx context.Context, post *database.Post) error {
+	id, err := r.db.InsertPost(ctx, database.InsertPostParams{
+		Title:   post.Title,
+		Content: post.Content,
+	})
+	if err != nil {
+		return err
+	}
+	post.ID = id
+	return nil
+}
+
+
+/*
 
 type (
 	Repository interface {
-		Store(ctx context.Context, product *domain.Post) error
+		
 		GetAll(ctx context.Context, offset, limit int) ([]domain.Post, error)
 		Get(ctx context.Context, id int) (*domain.Post, error)
 		Delete(ctx context.Context, id int) error
@@ -41,23 +62,8 @@ type (
 	}
 )
 
-// NewRepo is a repositories handler.
-func NewRepo(l *slog.Logger) Repository {
-	return &repo{
-		db: db{
-			products: make(map[int]domain.Product),
-			maxID:    0,
-		},
-		log: l,
-	}
-}
 
-func (r *repo) Store(_ context.Context, product *domain.Product) error {
-	r.db.maxID++
-	product.ID = r.db.maxID
-	r.db.products[r.db.maxID] = *product
-	return nil
-}
+
 
 func (r *repo) GetAll(_ context.Context, _, _ int) ([]domain.Product, error) {
 	return slices.Collect(maps.Values(r.db.products)), nil

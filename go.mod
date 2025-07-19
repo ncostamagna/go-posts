@@ -5,6 +5,7 @@ go 1.24.5
 require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-kit/kit v0.13.0
+	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/ncostamagna/go-http-utils v0.0.5
 	github.com/prometheus/client_golang v1.22.0
