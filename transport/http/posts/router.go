@@ -1,4 +1,4 @@
-package httpTransport
+package posts
 
 import (
 	"context"
@@ -10,7 +10,6 @@ import (
 	"github.com/go-kit/kit/endpoint"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/ncostamagna/go-http-utils/response"
-	"github.com/ncostamagna/go-posts/internal/posts"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -21,7 +20,7 @@ const (
 	ctxHeader ctxKey = "header"
 )
 
-func NewHTTPServer(_ context.Context, endpoints posts.Endpoints) http.Handler {
+func NewHTTPServer(_ context.Context, endpoints Endpoints) http.Handler {
 
 	gin.SetMode(gin.ReleaseMode)
 
@@ -32,12 +31,12 @@ func NewHTTPServer(_ context.Context, endpoints posts.Endpoints) http.Handler {
 	}
 	r.Use(ginDecode())
 
-	r.GET("/posts", gin.WrapH(httptransport.NewServer(endpoint.Endpoint(endpoints.GetAll), decodeGetAllHandler, encodeResponse, opts...)))
-	r.POST("/posts", gin.WrapH(httptransport.NewServer(endpoint.Endpoint(endpoints.Store), decodeStoreHandler, encodeResponse, opts...)))
+	r.GET("/posts", gin.WrapH(httptransport.NewServer(endpoints.GetAll, decodeGetAllHandler, encodeResponse, opts...)))
+	r.POST("/posts", gin.WrapH(httptransport.NewServer(endpoints.Store, decodeStoreHandler, encodeResponse, opts...)))
 
-	r.GET("/posts/:id", gin.WrapH(httptransport.NewServer(endpoint.Endpoint(endpoints.Get), decodeGetHandler, encodeResponse, opts...)))
-	r.PATCH("/posts/:id", gin.WrapH(httptransport.NewServer(endpoint.Endpoint(endpoints.Update), decodeUpdateHandler, encodeResponse, opts...)))
-	r.DELETE("/posts/:id", gin.WrapH(httptransport.NewServer(endpoint.Endpoint(endpoints.Delete), decodeDeleteHandler, encodeResponse, opts...)))
+	r.GET("/posts/:id", gin.WrapH(httptransport.NewServer(endpoints.Get, decodeGetHandler, encodeResponse, opts...)))
+	r.PATCH("/posts/:id", gin.WrapH(httptransport.NewServer(endpoints.Update, decodeUpdateHandler, encodeResponse, opts...)))
+	r.DELETE("/posts/:id", gin.WrapH(httptransport.NewServer(endpoints.Delete, decodeDeleteHandler, encodeResponse, opts...)))
 
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
@@ -65,20 +64,20 @@ func decodeGetHandler(ctx context.Context, _ *http.Request) (interface{}, error)
 		return nil, response.BadRequest(err.Error())
 	}
 
-	return posts.GetReq{
+	return GetReq{
 		ID: id,
 	}, nil
 }
 
 func decodeGetAllHandler(_ context.Context, _ *http.Request) (interface{}, error) {
 
-	var req posts.GetAllReq
+	var req GetAllReq
 
 	return req, nil
 }
 
 func decodeStoreHandler(_ context.Context, r *http.Request) (interface{}, error) {
-	var req posts.StoreReq
+	var req StoreReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, response.BadRequest(err.Error())
 	}
@@ -88,14 +87,14 @@ func decodeStoreHandler(_ context.Context, r *http.Request) (interface{}, error)
 
 func decodeUpdateHandler(_ context.Context, _ *http.Request) (interface{}, error) {
 
-	var req posts.UpdateReq
+	var req UpdateReq
 
 	return req, nil
 }
 
 func decodeDeleteHandler(_ context.Context, _ *http.Request) (interface{}, error) {
 
-	var req posts.DeleteReq
+	var req DeleteReq
 
 	return req, nil
 }

@@ -11,9 +11,8 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/ncostamagna/go-posts/internal/posts"
 	"github.com/ncostamagna/go-posts/pkg/log"
-	"github.com/ncostamagna/go-posts/transport/httpTransport"
+	"github.com/ncostamagna/go-posts/transport/http/posts"
 )
 
 const writeTimeout = 10 * time.Second

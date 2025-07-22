@@ -3,19 +3,20 @@ package posts
 import (
 	"context"
 
+	intPosts "github.com/ncostamagna/go-posts/internal/posts"
 	"github.com/ncostamagna/go-http-utils/response"
+
+	"github.com/go-kit/kit/endpoint"
 )
 
 type (
-	Controller func(ctx context.Context, request interface{}) (interface{}, error)
-
-	// Endpoints struct.
+	
 	Endpoints struct {
-		Get    Controller
-		GetAll Controller
-		Store  Controller
-		Update Controller
-		Delete Controller
+		Get    endpoint.Endpoint
+		GetAll endpoint.Endpoint
+		Store  endpoint.Endpoint
+		Update endpoint.Endpoint
+		Delete endpoint.Endpoint
 	}
 
 	StoreReq struct {
@@ -49,7 +50,7 @@ type (
 	}
 )
 
-func MakeEndpoints(s Service, c Config) Endpoints {
+func MakeEndpoints(s intPosts.Service, c Config) Endpoints {
 	return Endpoints{
 		Get:    makeGet(s),
 		GetAll: makeGetAll(s, c),
@@ -59,21 +60,21 @@ func MakeEndpoints(s Service, c Config) Endpoints {
 	}
 }
 
-func makeGet(service Service) Controller {
+func makeGet(service intPosts.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		
 		return response.OK("Success", nil,  nil), nil
 	}
 }
 
-func makeGetAll(service Service, c Config) Controller {
+func makeGetAll(service intPosts.Service, c Config) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 
 		return response.OK("Success", nil, nil), nil
 	}
 }
 
-func makeStore(service Service) Controller {
+func makeStore(service intPosts.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(StoreReq)
 
@@ -93,14 +94,14 @@ func makeStore(service Service) Controller {
 	}
 }
 
-func makeUpdate(service Service) Controller {
+func makeUpdate(service intPosts.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 
 		return response.OK("Success", "UPDATE: testing 1234 6789", nil), nil
 	}
 }
 
-func makeDelete(service Service) Controller {
+func makeDelete(service intPosts.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 
 		return response.OK("Success", "", nil), nil
