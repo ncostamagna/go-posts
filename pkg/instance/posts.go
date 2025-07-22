@@ -1,13 +1,12 @@
 package instance
 
 import (
+	"database/sql"
 	"log/slog"
 	"os"
-	"database/sql"
 
-	_ "github.com/lib/pq"
-	"github.com/ncostamagna/go-posts/adapters/database"
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
+	"github.com/ncostamagna/go-posts/adapters/database"
 	"github.com/ncostamagna/go-posts/internal/posts"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 )

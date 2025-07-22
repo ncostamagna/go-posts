@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-kit/kit/endpoint"
 	httptransport "github.com/go-kit/kit/transport/http"
+	"github.com/google/uuid"
 	"github.com/ncostamagna/go-http-utils/response"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -18,6 +19,7 @@ type ctxKey string
 const (
 	ctxParam  ctxKey = "params"
 	ctxHeader ctxKey = "header"
+	ctxQuery  ctxKey = "query"
 )
 
 func NewHTTPServer(_ context.Context, endpoints Endpoints) http.Handler {
@@ -51,6 +53,7 @@ func ginDecode() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := context.WithValue(c.Request.Context(), ctxParam, c.Params)
 		ctx = context.WithValue(ctx, ctxHeader, c.Request.Header)
+		ctx = context.WithValue(ctx, ctxQuery, c.Request.URL.Query())
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}
@@ -59,21 +62,26 @@ func ginDecode() gin.HandlerFunc {
 func decodeGetHandler(ctx context.Context, _ *http.Request) (interface{}, error) {
 	params := ctx.Value(ctxParam).(gin.Params)
 
-	id, err := strconv.Atoi(params.ByName("id"))
-	if err != nil {
-		return nil, response.BadRequest(err.Error())
-	}
-
 	return GetReq{
-		ID: id,
+		ID: uuid.MustParse(params.ByName("id")),
 	}, nil
 }
 
-func decodeGetAllHandler(_ context.Context, _ *http.Request) (interface{}, error) {
+func decodeGetAllHandler(ctx context.Context, _ *http.Request) (interface{}, error) {
+	query := ctx.Value(ctxQuery).(url.Values)
+	page, err := strconv.ParseInt(query.Get("page"), 10, 32)
+	if err != nil {
+		page = 0
+	}
+	limit, err := strconv.ParseInt(query.Get("limit"), 10, 32)
+	if err != nil {
+		limit = 15
+	}
 
-	var req GetAllReq
-
-	return req, nil
+	return GetAllReq{
+		Page:  int32(page),
+		Limit: int32(limit),
+	}, nil
 }
 
 func decodeStoreHandler(_ context.Context, r *http.Request) (interface{}, error) {
@@ -85,18 +93,23 @@ func decodeStoreHandler(_ context.Context, r *http.Request) (interface{}, error)
 	return req, nil
 }
 
-func decodeUpdateHandler(_ context.Context, _ *http.Request) (interface{}, error) {
-
+func decodeUpdateHandler(ctx context.Context, r *http.Request) (interface{}, error) {
 	var req UpdateReq
+	params := ctx.Value(ctxParam).(gin.Params)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return nil, response.BadRequest(err.Error())
+	}
+
+	req.ID = uuid.MustParse(params.ByName("id"))
 
 	return req, nil
 }
 
-func decodeDeleteHandler(_ context.Context, _ *http.Request) (interface{}, error) {
-
-	var req DeleteReq
-
-	return req, nil
+func decodeDeleteHandler(ctx context.Context, _ *http.Request) (interface{}, error) {
+	params := ctx.Value(ctxParam).(gin.Params)
+	return DeleteReq{
+		ID: uuid.MustParse(params.ByName("id")),
+	}, nil
 }
 
 func encodeResponse(_ context.Context, w http.ResponseWriter, resp interface{}) error {

@@ -3,14 +3,14 @@ package posts
 import (
 	"context"
 
-	intPosts "github.com/ncostamagna/go-posts/internal/posts"
 	"github.com/ncostamagna/go-http-utils/response"
+	intPosts "github.com/ncostamagna/go-posts/internal/posts"
 
 	"github.com/go-kit/kit/endpoint"
+	"github.com/google/uuid"
 )
 
 type (
-	
 	Endpoints struct {
 		Get    endpoint.Endpoint
 		GetAll endpoint.Endpoint
@@ -25,24 +25,22 @@ type (
 	}
 
 	GetReq struct {
-		ID int `json:"productId"`
+		ID uuid.UUID `json:"id"`
 	}
 
 	GetAllReq struct {
-		Name  string
-		Limit int
-		Page  int
+		Limit int32
+		Page  int32
 	}
 
 	UpdateReq struct {
-		ID          int
-		Name        *string  `json:"name"`
-		Description *string  `json:"description"`
-		Price       *float64 `json:"price"`
+		ID      uuid.UUID `json:"id"`
+		Title   string    `json:"title"`
+		Content string    `json:"content"`
 	}
 
 	DeleteReq struct {
-		ID int
+		ID uuid.UUID `json:"id"`
 	}
 
 	Config struct {
@@ -62,15 +60,27 @@ func MakeEndpoints(s intPosts.Service, c Config) Endpoints {
 
 func makeGet(service intPosts.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		
-		return response.OK("Success", nil,  nil), nil
+		req := request.(GetReq)
+
+		post, err := service.Get(ctx, req.ID)
+		if err != nil {
+			return nil, response.InternalServerError(err.Error())
+		}
+
+		return response.OK("Success", post, nil), nil
 	}
 }
 
-func makeGetAll(service intPosts.Service, c Config) endpoint.Endpoint {
+func makeGetAll(service intPosts.Service, _ Config) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(GetAllReq)
 
-		return response.OK("Success", nil, nil), nil
+		posts, err := service.GetAll(ctx, req.Page, req.Limit)
+		if err != nil {
+			return nil, response.InternalServerError(err.Error())
+		}
+
+		return response.OK("Success", posts, nil), nil
 	}
 }
 
@@ -96,14 +106,40 @@ func makeStore(service intPosts.Service) endpoint.Endpoint {
 
 func makeUpdate(service intPosts.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(UpdateReq)
 
-		return response.OK("Success", "UPDATE: testing 1234 6789", nil), nil
+		if req.ID == uuid.Nil {
+			return nil, response.BadRequest("ID is required")
+		}
+
+		if req.Title == "" {
+			return nil, response.BadRequest("Title is required")
+		}
+
+		if req.Content == "" {
+			return nil, response.BadRequest("Content is required")
+		}
+
+		if err := service.Update(ctx, req.ID, req.Title, req.Content); err != nil {
+			return nil, response.InternalServerError(err.Error())
+		}
+
+		return response.OK("Success", nil, nil), nil
 	}
 }
 
 func makeDelete(service intPosts.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(DeleteReq)
 
-		return response.OK("Success", "", nil), nil
+		if req.ID == uuid.Nil {
+			return nil, response.BadRequest("ID is required")
+		}
+
+		if err := service.Delete(ctx, req.ID); err != nil {
+			return nil, response.InternalServerError(err.Error())
+		}
+
+		return response.OK("Success", nil, nil), nil
 	}
 }

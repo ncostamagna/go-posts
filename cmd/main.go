@@ -11,7 +11,9 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"github.com/ncostamagna/go-posts/pkg/log"
+	"github.com/ncostamagna/go-posts/transport/http/httputil"
 	"github.com/ncostamagna/go-posts/transport/http/posts"
 )
 
@@ -35,7 +37,6 @@ func main() {
 		}
 	}()
 
-
 	flag.Parse()
 	ctx := context.Background()
 
@@ -43,7 +44,7 @@ func main() {
 
 	pagLimDef := "30"
 
-	h := httpTransport.NewHTTPServer(ctx, posts.MakeEndpoints(postsSrv, posts.Config{LimPageDef: pagLimDef}))
+	h := posts.NewHTTPServer(ctx, posts.MakeEndpoints(postsSrv, posts.Config{LimPageDef: pagLimDef}))
 
 	url := os.Getenv("APP_URL")
 	if url == "" {
@@ -51,7 +52,7 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Handler:      accessControl(h),
+		Handler:      httputil.AccessControl(h),
 		Addr:         url,
 		WriteTimeout: writeTimeout,
 		ReadTimeout:  readTimeout,
@@ -69,18 +70,4 @@ func main() {
 		logger.Error("Error server", "err", err)
 	}
 
-}
-
-func accessControl(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, HEAD")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With")
-
-		if r.Method == http.MethodOptions {
-			return
-		}
-
-		h.ServeHTTP(w, r)
-	})
 }

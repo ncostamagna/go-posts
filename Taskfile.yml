@@ -9,6 +9,12 @@ tasks:
       - echo "Available commands:"
       - task --list-all
     silent: true
+  clean:
+    desc: Clean up the project
+    cmds:
+      - go mod tidy
+      - go fmt ./...
+      - goimports -w .
   dev:
     desc: Start development server with hot reload using Air
     cmds:
@@ -44,5 +50,6 @@ tasks:
   generate:
     desc: Generate queries from sql files
     cmds:
+      - rm -f adapters/database/*.go
       - sqlc generate
     silent: true
