@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 
-	//"github.com/ncostamagna/go-monitoring/app/pkg/instance"
+	"github.com/ncostamagna/go-posts/pkg/instance"
 
 	"context"
 	"flag"
@@ -40,11 +40,11 @@ func main() {
 	flag.Parse()
 	ctx := context.Background()
 
-	//productSrv := instance.NewProductService(logger)
+	postsSrv := instance.NewPostsService(instance.NewDatabase(), logger)
 
 	pagLimDef := "30"
 
-	h := httpTransport.NewHTTPServer(ctx, posts.MakeEndpoints(nil, posts.Config{LimPageDef: pagLimDef}))
+	h := httpTransport.NewHTTPServer(ctx, posts.MakeEndpoints(postsSrv, posts.Config{LimPageDef: pagLimDef}))
 
 	url := os.Getenv("APP_URL")
 	if url == "" {

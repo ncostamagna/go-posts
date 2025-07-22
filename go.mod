@@ -7,6 +7,7 @@ require (
 	github.com/go-kit/kit v0.13.0
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.10.9
 	github.com/ncostamagna/go-http-utils v0.0.5
 	github.com/prometheus/client_golang v1.22.0
 )

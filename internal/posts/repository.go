@@ -19,7 +19,6 @@ type (
 )
 
 
-// NewRepo is a repositories handler.
 func NewRepo(db *database.Queries, l *slog.Logger) Repository {
 	return &repo{
 		db:  db,

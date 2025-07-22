@@ -19,9 +19,8 @@ type (
 	}
 
 	StoreReq struct {
-		Name        string  `json:"name"`
-		Description string  `json:"description"`
-		Price       float64 `json:"price"`
+		Title   string `json:"title"`
+		Content string `json:"content"`
 	}
 
 	GetReq struct {
@@ -76,8 +75,21 @@ func makeGetAll(service Service, c Config) Controller {
 
 func makeStore(service Service) Controller {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(StoreReq)
 
-		return response.Created("Success", nil, nil), nil
+		if req.Title == "" {
+			return nil, response.BadRequest("Title is required")
+		}
+
+		if req.Content == "" {
+			return nil, response.BadRequest("Content is required")
+		}
+
+		post, err := service.Store(ctx, req.Title, req.Content)
+		if err != nil {
+			return nil, response.InternalServerError(err.Error())
+		}
+		return response.Created("Success", post, nil), nil
 	}
 }
 
