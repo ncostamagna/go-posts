@@ -26,8 +26,9 @@ func NewHTTPServer(_ context.Context, endpoints Endpoints) http.Handler {
 
 	gin.SetMode(gin.ReleaseMode)
 
-	r := gin.Default()
-
+	r := gin.New()
+	r.Use(gin.Recovery())
+	
 	opts := []httptransport.ServerOption{
 		httptransport.ServerErrorEncoder(encodeError),
 	}
