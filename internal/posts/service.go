@@ -28,6 +28,8 @@ type (
 	}
 )
 
+const defaultLimit = 30
+
 func NewService(l *slog.Logger, db database.Database) Service {
 	return &service{
 		log:  l,
@@ -51,6 +53,9 @@ func (s service) Store(ctx context.Context, title, content string) (*database.Po
 }
 
 func (s service) GetAll(ctx context.Context, offset, limit int32) ([]database.Post, error) {
+	if limit <= 0 {
+		limit = defaultLimit
+	}
 	posts, err := s.db.GetAll(ctx, offset, limit)
 	if err != nil {	
 		s.log.Error("error fetching posts", "error", err)

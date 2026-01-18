@@ -5,16 +5,13 @@ import (
 
 	"github.com/ncostamagna/go-posts/pkg/instance"
 
-	"context"
 	"flag"
-	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/ncostamagna/go-posts/pkg/log"
-	"github.com/ncostamagna/go-posts/transport/http/httputil"
-	"github.com/ncostamagna/go-posts/transport/http/posts"
+	"github.com/ncostamagna/go-posts/transport/http/httpposts"
 )
 
 const writeTimeout = 10 * time.Second
@@ -38,31 +35,23 @@ func main() {
 	}()
 
 	flag.Parse()
-	ctx := context.Background()
 
 	postsSrv := instance.NewPostsService(instance.NewDatabase(), logger)
 
 	pagLimDef := "30"
 
-	h := posts.NewHTTPServer(ctx, posts.MakeEndpoints(postsSrv, posts.Config{LimPageDef: pagLimDef}))
+	app := httpposts.NewHTTPServer(httpposts.MakePostsEndpoints(postsSrv, httpposts.Config{LimPageDef: pagLimDef}))
 
 	url := os.Getenv("APP_URL")
 	if url == "" {
 		url = defaultURL
 	}
 
-	srv := &http.Server{
-		Handler:      httputil.AccessControl(h),
-		Addr:         url,
-		WriteTimeout: writeTimeout,
-		ReadTimeout:  readTimeout,
-	}
-
 	errs := make(chan error)
 
 	go func() {
 		logger.Info("Listening", "url", url)
-		errs <- srv.ListenAndServe()
+		errs <- app.Listen(url)
 	}()
 
 	err := <-errs
