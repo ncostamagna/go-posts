@@ -16,8 +16,8 @@ const METHOD = "method"
 func NewPostsService(db *database.Queries, logger *slog.Logger) posts.Service {
 
 	fieldKeys := []string{METHOD}
-	repository := posts.NewRepo(db, logger)
-	service := posts.NewService(logger, repository)
+	repo := database.NewDB(db, logger)
+	service := posts.NewService(logger, repo)
 	return posts.NewInstrumenting(
 		kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
 			Namespace: "api",

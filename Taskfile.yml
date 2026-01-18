@@ -50,6 +50,6 @@ tasks:
   generate:
     desc: Generate queries from sql files
     cmds:
-      - rm -f adapters/database/*.go
+      - rm -f adapters/database/*_gen.go
       - sqlc generate
     silent: true

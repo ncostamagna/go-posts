@@ -24,14 +24,14 @@ type (
 
 	service struct {
 		log  *slog.Logger
-		repo Repository
+		db   database.Database
 	}
 )
 
-func NewService(l *slog.Logger, repo Repository) Service {
+func NewService(l *slog.Logger, db database.Database) Service {
 	return &service{
 		log:  l,
-		repo: repo,
+		db:   db,
 	}
 }
 
@@ -42,7 +42,7 @@ func (s service) Store(ctx context.Context, title, content string) (*database.Po
 		Content: content,
 	}
 
-	if err := s.repo.Store(ctx, post); err != nil {
+	if err := s.db.Store(ctx, post); err != nil {
 		s.log.Error("error storing post", "error", err)
 		return nil, err
 	}
@@ -51,8 +51,8 @@ func (s service) Store(ctx context.Context, title, content string) (*database.Po
 }
 
 func (s service) GetAll(ctx context.Context, offset, limit int32) ([]database.Post, error) {
-	posts, err := s.repo.GetAll(ctx, offset, limit)
-	if err != nil {
+	posts, err := s.db.GetAll(ctx, offset, limit)
+	if err != nil {	
 		s.log.Error("error fetching posts", "error", err)
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (s service) GetAll(ctx context.Context, offset, limit int32) ([]database.Po
 }
 
 func (s service) Get(ctx context.Context, id uuid.UUID) (*database.Post, error) {
-	post, err := s.repo.Get(ctx, id)
+	post, err := s.db.Get(ctx, id)
 	if err != nil {
 		s.log.Error("error fetching post", "error", err)
 		return nil, err
@@ -71,7 +71,7 @@ func (s service) Get(ctx context.Context, id uuid.UUID) (*database.Post, error) 
 }
 
 func (s service) Delete(ctx context.Context, id uuid.UUID) error {
-	err := s.repo.Delete(ctx, id)
+	err := s.db.Delete(ctx, id)
 	if err != nil {
 		s.log.Error("error deleting post", "error", err)
 		return err
@@ -81,7 +81,7 @@ func (s service) Delete(ctx context.Context, id uuid.UUID) error {
 }
 
 func (s service) Update(ctx context.Context, id uuid.UUID, title, content string) error {
-	err := s.repo.Update(ctx, id, title, content)
+	err := s.db.Update(ctx, id, title, content)
 	if err != nil {
 		s.log.Error("error updating post", "error", err)
 		return err
@@ -91,7 +91,7 @@ func (s service) Update(ctx context.Context, id uuid.UUID, title, content string
 }
 
 func (s service) Count(ctx context.Context) (int, error) {
-	count, err := s.repo.Count(ctx)
+	count, err := s.db.Count(ctx)
 	if err != nil {
 		s.log.Error("error counting posts", "error", err)
 		return 0, err
