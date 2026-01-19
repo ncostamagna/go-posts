@@ -39,6 +39,10 @@ services:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
       GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+      GF_USERS_ALLOW_SIGN_UP: "false"                                               
+      GF_AUTH_DISABLE_LOGIN_FORM: "false"                                           
+      GF_AUTH_ANONYMOUS_ENABLED: "true"          # Enable anonymous access          
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin          # Give admin role to anonymous 
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
       - grafana-storage:/var/lib/grafana

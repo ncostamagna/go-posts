@@ -1,0 +1,76 @@
+{
+  "title": "Posts Service",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Service Request Count",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 10 },
+      "targets": [
+        {
+          "expr": "increase(api_posts_service_request_count{job=\"go-posts\"}[5m])",
+          "legendFormat": "{{method}}",
+          "refId": "A"
+        }
+      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      }
+    },
+    {
+        "id": 2,
+        "title": "Service Request Latency (avg ms by method)",
+        "type": "barchart",
+        "gridPos": { "x": 0, "y": 10, "w": 24, "h": 10 },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "(sum by (method) (rate(api_posts_service_request_latency_microseconds_sum{job=\"go-posts\"}[5m])) / sum by (method) (rate(api_posts_service_request_latency_microseconds_count{job=\"go-posts\"}[5m])))",
+            "legendFormat": "{{method}}",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "options": {
+          "orientation": "vertical",
+          "showValue": "always",
+          "stacking": "none",
+          "xTickLabelRotation": 0,
+          "xTickLabelSpacing": 0
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ms",
+            "decimals": 3
+          },
+          "overrides": []
+        }
+    },
+    {
+        "id": 3,
+        "title": "Service Request Latency",
+        "type": "timeseries",
+        "gridPos": { "x": 0, "y": 0, "w": 24, "h": 10 },
+        "targets": [
+          {
+            "expr": "(sum by (method) (rate(api_posts_service_request_latency_microseconds_sum{job=\"go-posts\"}[20m])) / sum by (method) (rate(api_posts_service_request_latency_microseconds_count{job=\"go-posts\"}[20m])))",
+            "legendFormat": "{{method}}",
+            "refId": "A"
+          }
+        ],
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        }
+      }
+  ],
+  "schemaVersion": 38,
+  "version": 1
+}
+
+
