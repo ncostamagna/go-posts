@@ -5,39 +5,39 @@ import (
 	"log/slog"
 	"os"
 
-	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	"github.com/ncostamagna/go-posts/adapters/database"
 	"github.com/ncostamagna/go-posts/internal/posts"
-	stdprometheus "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
-const METHOD = "method"
-
 func NewPostsService(db *database.Queries, logger *slog.Logger) posts.Service {
-
-	fieldKeys := []string{METHOD}
 	repo := database.NewDB(db, logger)
 	service := posts.NewService(logger, repo)
-	return posts.NewInstrumenting(
-		kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
-			Namespace: "api",
-			Subsystem: "posts_service",
-			Name:      "request_count",
-			Help:      "Number of requests received.",
-		}, fieldKeys),
-		kitprometheus.NewSummaryFrom(stdprometheus.SummaryOpts{
-			Namespace: "api",
-			Subsystem: "posts_service",
-			Name:      "request_latency_microseconds_summary",
-			Help:      "Total duration of requests in microseconds.",
-		}, fieldKeys),
-		kitprometheus.NewHistogramFrom(stdprometheus.HistogramOpts{
-			Namespace: "api",
-			Subsystem: "posts_service",
-			Name:      "request_latency_microseconds",
-			Help:      "Total duration of requests in microseconds.",
-		}, fieldKeys),
-		service)
+
+	requestCount := prometheus.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "api",
+		Subsystem: "posts_service",
+		Name:      "request_count_total",
+		Help:      "Number of requests received.",
+	}, []string{"method"})
+
+	requestLatencySummary := prometheus.NewSummaryVec(prometheus.SummaryOpts{
+		Namespace: "api",
+		Subsystem: "posts_service",
+		Name:      "request_latency_seconds",
+		Help:      "Total duration of requests in seconds.",
+	}, []string{"method"})
+
+	requestLatency := prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Namespace: "api",
+		Subsystem: "posts_service",
+		Name:      "request_latency_seconds",
+		Help:      "Total duration of requests in seconds.",
+	}, []string{"method"})
+
+	prometheus.MustRegister(requestCount, requestLatencySummary, requestLatency)
+
+	return posts.NewInstrumenting(requestCount, requestLatencySummary, requestLatency, service)
 }
 
 func NewDatabase() *database.Queries {

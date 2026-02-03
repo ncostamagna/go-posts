@@ -10,6 +10,6 @@ func ResponseError(c *fiber.Ctx, status int, err error) error {
 
 func ResponseSuccess(c *fiber.Ctx, status int, data interface{}) error {
 	return c.Status(status).JSON(fiber.Map{
-		"data":    data,
+		"data": data,
 	})
 }

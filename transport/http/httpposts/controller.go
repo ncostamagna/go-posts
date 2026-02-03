@@ -3,10 +3,11 @@ package httpposts
 import (
 	"errors"
 
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/ncostamagna/go-posts/internal/posts"
-	"fmt"
 	"github.com/google/uuid"
+	"github.com/ncostamagna/go-posts/internal/posts"
 	"github.com/ncostamagna/go-posts/transport/http/fiberutil"
 )
 
@@ -75,11 +76,23 @@ func makeGet(service posts.Service) fiber.Handler {
 
 func makeGetAll(service posts.Service, _ Config) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		req := GetAllReq{
-			Page:  int32(c.QueryInt("page")),
-			Limit: int32(c.QueryInt("limit")),
+		pageStr := c.Query("page", "0")
+		limitStr := c.Query("limit", "0")
+
+		page, err := strconv.ParseInt(pageStr, 10, 32)
+		if err != nil || page < 0 {
+			return fiberutil.ResponseError(c, fiber.StatusBadRequest, errors.New("invalid page"))
 		}
-		fmt.Println(req)
+
+		limit, err := strconv.ParseInt(limitStr, 10, 32)
+		if err != nil || limit < 0 {
+			return fiberutil.ResponseError(c, fiber.StatusBadRequest, errors.New("invalid limit"))
+		}
+
+		req := GetAllReq{
+			Page:  int32(page),
+			Limit: int32(limit),
+		}
 
 		posts, err := service.GetAll(c.Context(), req.Page, req.Limit)
 		if err != nil {

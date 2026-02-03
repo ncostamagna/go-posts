@@ -23,8 +23,8 @@ type (
 	}
 
 	service struct {
-		log  *slog.Logger
-		db   database.Database
+		log *slog.Logger
+		db  database.Database
 	}
 )
 
@@ -32,8 +32,8 @@ const defaultLimit = 30
 
 func NewService(l *slog.Logger, db database.Database) Service {
 	return &service{
-		log:  l,
-		db:   db,
+		log: l,
+		db:  db,
 	}
 }
 
@@ -57,7 +57,7 @@ func (s service) GetAll(ctx context.Context, offset, limit int32) ([]database.Po
 		limit = defaultLimit
 	}
 	posts, err := s.db.GetAll(ctx, offset, limit)
-	if err != nil {	
+	if err != nil {
 		s.log.Error("error fetching posts", "error", err)
 		return nil, err
 	}

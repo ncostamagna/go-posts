@@ -4,16 +4,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-kit/kit/metrics"
 	"github.com/google/uuid"
 	"github.com/ncostamagna/go-posts/adapters/database"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type (
 	instrumenting struct {
-		requestCount          metrics.Counter
-		requestLatency        metrics.Histogram
-		requestLatencySummary metrics.Histogram
+		requestCount          *prometheus.CounterVec
+		requestLatency        *prometheus.HistogramVec
+		requestLatencySummary *prometheus.SummaryVec
 		s                     Service
 	}
 
@@ -22,7 +22,7 @@ type (
 	}
 )
 
-func NewInstrumenting(requestCount metrics.Counter, requestLatencySummary metrics.Histogram, requestLatency metrics.Histogram, s Service) Instrumenting {
+func NewInstrumenting(requestCount *prometheus.CounterVec, requestLatencySummary *prometheus.SummaryVec, requestLatency *prometheus.HistogramVec, s Service) Instrumenting {
 	return &instrumenting{
 		requestCount:          requestCount,
 		requestLatencySummary: requestLatencySummary,
@@ -33,9 +33,9 @@ func NewInstrumenting(requestCount metrics.Counter, requestLatencySummary metric
 
 func (i *instrumenting) Store(ctx context.Context, title, content string) (*database.Post, error) {
 	defer func(begin time.Time) {
-		i.requestCount.With("method", "Store").Add(1)
-		i.requestLatencySummary.With("method", "Store").Observe(time.Since(begin).Seconds())
-		i.requestLatency.With("method", "Store").Observe(time.Since(begin).Seconds())
+		i.requestCount.WithLabelValues("Store").Inc()
+		i.requestLatencySummary.WithLabelValues("Store").Observe(time.Since(begin).Seconds())
+		i.requestLatency.WithLabelValues("Store").Observe(time.Since(begin).Seconds())
 	}(time.Now())
 
 	return i.s.Store(ctx, title, content)
@@ -43,9 +43,9 @@ func (i *instrumenting) Store(ctx context.Context, title, content string) (*data
 
 func (i *instrumenting) GetAll(ctx context.Context, offset, limit int32) ([]database.Post, error) {
 	defer func(begin time.Time) {
-		i.requestCount.With("method", "GetAll").Add(1)
-		i.requestLatencySummary.With("method", "GetAll").Observe(time.Since(begin).Seconds())
-		i.requestLatency.With("method", "GetAll").Observe(time.Since(begin).Seconds())
+		i.requestCount.WithLabelValues("GetAll").Inc()
+		i.requestLatencySummary.WithLabelValues("GetAll").Observe(time.Since(begin).Seconds())
+		i.requestLatency.WithLabelValues("GetAll").Observe(time.Since(begin).Seconds())
 	}(time.Now())
 
 	return i.s.GetAll(ctx, offset, limit)
@@ -53,9 +53,9 @@ func (i *instrumenting) GetAll(ctx context.Context, offset, limit int32) ([]data
 
 func (i *instrumenting) Get(ctx context.Context, id uuid.UUID) (*database.Post, error) {
 	defer func(begin time.Time) {
-		i.requestCount.With("method", "Get").Add(1)
-		i.requestLatencySummary.With("method", "Get").Observe(time.Since(begin).Seconds())
-		i.requestLatency.With("method", "Get").Observe(time.Since(begin).Seconds())
+		i.requestCount.WithLabelValues("Get").Inc()
+		i.requestLatencySummary.WithLabelValues("Get").Observe(time.Since(begin).Seconds())
+		i.requestLatency.WithLabelValues("Get").Observe(time.Since(begin).Seconds())
 	}(time.Now())
 
 	return i.s.Get(ctx, id)
@@ -63,9 +63,9 @@ func (i *instrumenting) Get(ctx context.Context, id uuid.UUID) (*database.Post, 
 
 func (i *instrumenting) Delete(ctx context.Context, id uuid.UUID) error {
 	defer func(begin time.Time) {
-		i.requestCount.With("method", "Delete").Add(1)
-		i.requestLatencySummary.With("method", "Delete").Observe(time.Since(begin).Seconds())
-		i.requestLatency.With("method", "Delete").Observe(time.Since(begin).Seconds())
+		i.requestCount.WithLabelValues("Delete").Inc()
+		i.requestLatencySummary.WithLabelValues("Delete").Observe(time.Since(begin).Seconds())
+		i.requestLatency.WithLabelValues("Delete").Observe(time.Since(begin).Seconds())
 	}(time.Now())
 
 	return i.s.Delete(ctx, id)
@@ -73,9 +73,9 @@ func (i *instrumenting) Delete(ctx context.Context, id uuid.UUID) error {
 
 func (i *instrumenting) Update(ctx context.Context, id uuid.UUID, title, content string) error {
 	defer func(begin time.Time) {
-		i.requestCount.With("method", "Update").Add(1)
-		i.requestLatencySummary.With("method", "Update").Observe(time.Since(begin).Seconds())
-		i.requestLatency.With("method", "Update").Observe(time.Since(begin).Seconds())
+		i.requestCount.WithLabelValues("Update").Inc()
+		i.requestLatencySummary.WithLabelValues("Update").Observe(time.Since(begin).Seconds())
+		i.requestLatency.WithLabelValues("Update").Observe(time.Since(begin).Seconds())
 	}(time.Now())
 
 	return i.s.Update(ctx, id, title, content)
@@ -83,9 +83,9 @@ func (i *instrumenting) Update(ctx context.Context, id uuid.UUID, title, content
 
 func (i *instrumenting) Count(ctx context.Context) (int, error) {
 	defer func(begin time.Time) {
-		i.requestCount.With("method", "Count").Add(1)
-		i.requestLatencySummary.With("method", "Count").Observe(time.Since(begin).Seconds())
-		i.requestLatency.With("method", "Count").Observe(time.Since(begin).Seconds())
+		i.requestCount.WithLabelValues("Count").Inc()
+		i.requestLatencySummary.WithLabelValues("Count").Observe(time.Since(begin).Seconds())
+		i.requestLatency.WithLabelValues("Count").Observe(time.Since(begin).Seconds())
 	}(time.Now())
 
 	return i.s.Count(ctx)

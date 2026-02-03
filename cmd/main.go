@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/ncostamagna/go-posts/pkg/instance"
 
 	"flag"
@@ -14,8 +12,6 @@ import (
 	"github.com/ncostamagna/go-posts/transport/http/httpposts"
 )
 
-const writeTimeout = 10 * time.Second
-const readTimeout = 4 * time.Second
 const defaultURL = "0.0.0.0:80"
 
 func main() {

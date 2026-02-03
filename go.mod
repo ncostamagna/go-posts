@@ -3,7 +3,6 @@ module github.com/ncostamagna/go-posts
 go 1.24.5
 
 require (
-	github.com/go-kit/kit v0.13.0
 	github.com/gofiber/fiber/v2 v2.52.10
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1

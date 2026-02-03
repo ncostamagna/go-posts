@@ -18,14 +18,14 @@ type (
 	}
 
 	db struct {
-		q  *Queries
+		q   *Queries
 		log *slog.Logger
 	}
 )
 
 func NewDB(q *Queries, l *slog.Logger) Database {
 	return &db{
-		q:  q,
+		q:   q,
 		log: l,
 	}
 }
